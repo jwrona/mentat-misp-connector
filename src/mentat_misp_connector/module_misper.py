@@ -21,7 +21,7 @@ import mentat.daemon.piper
 import mentat.daemon.component.parser
 import mentat.daemon.component.commiter
 
-from mentat_misp_connector.component_misper import MisperDaemonComponent
+from mentat_misp_connector.component_misper import MisperDaemonComponent, CONFIG_MISP_URL, CONFIG_MISP_KEY, CONFIG_MISP_CERT
 
 
 class MentatMisperDaemon(mentat.daemon.piper.PiperDaemon):
@@ -44,7 +44,7 @@ class MentatMisperDaemon(mentat.daemon.piper.PiperDaemon):
             #
             components = [
                 mentat.daemon.component.parser.ParserDaemonComponent(),
-                mentat.daemon.component.misper.MisperDaemonComponent()
+                MisperDaemonComponent()
             ]
         )
 
@@ -80,9 +80,9 @@ class MentatMisperDaemon(mentat.daemon.piper.PiperDaemon):
         :rtype: dict
         """
         cfgs = (
-            (mentat.daemon.component.misper.CONFIG_MISP_URL, ""),
-            (mentat.daemon.component.misper.CONFIG_MISP_KEY, ""),
-            (mentat.daemon.component.misper.CONFIG_MISP_CERT, "")
+            (CONFIG_MISP_URL, ""),
+            (CONFIG_MISP_KEY, ""),
+            (CONFIG_MISP_CERT, "")
         ) + cfgs
         return super()._init_config(cfgs, **kwargs)
 
