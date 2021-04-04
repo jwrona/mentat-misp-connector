@@ -6,14 +6,11 @@ Daemon component capable of converting IDEA (https://idea.cesnet.cz/) messages t
 (https://datatracker.ietf.org/doc/draft-dulaunoy-misp-core-format/) and inserting them to MISP instance.
 
 The implementation is based on :py:class:`pyzenkit.zendaemon.ZenDaemonComponent`.
-
 """
 
-import re
 import json
-from datetime import datetime
+from typing import Tuple, Set, Dict
 
-from pymisp import logger as pymisp_logger
 from pymisp import ExpandedPyMISP, MISPEvent, MISPObject
 
 import pyzenkit.zendaemon
@@ -54,7 +51,6 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
         self.misp_inst = None
         # TODO remove, just for debug purposes
         self.daemon = None
-        self.counter = 0
 
     def setup(self, daemon):
         """
@@ -167,7 +163,7 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
                 dst_ports.append(str(port))
         return src_ips, dst_ips, dst_ports
 
-    def _get_all_three_tuples_from_idea(self, idea_event):
+    def _get_all_three_tuples_from_idea(self, idea_event: dict) -> Set[Tuple[str, str, str]]:
         """ Get all possible combinations of src ips, dst ips and dst ports. """
         src_ips, dst_ips, dst_ports = self._get_all_attributes_from_idea(idea_event)
         if not all((src_ips, dst_ips, dst_ports)):
@@ -180,10 +176,9 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
                     new_objects_all_combinations.add((src_ip, dst_ip, dst_port))
         return new_objects_all_combinations
 
-    def _get_unique_id_for_three_tuple(self, three_tuple):
+    def _get_unique_id_for_three_tuple(self, three_tuple: Tuple[str, str, str]) -> str:
         """ Calculate unique id - WAIT FOR ALGORITHM DESCRIPTION """
-        self.counter += 1
-        return str(self.counter)
+        return ",".join(three_tuple)
 
     def _get_all_unique_object_attributes(self, idea_event):
         """ For every three tuple in IDEA event calculate unique identifier and return it with tuples. """
@@ -208,11 +203,10 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
                 return True
         return False
 
-    def _add_sightings_to_present_objects(self, three_tuples: dict, misp_event: MISPEvent) -> int:
+    def _add_sightings_to_present_objects(self, three_tuples: Dict[str, tuple], misp_event: MISPEvent) -> int:
         """ Add sighting to all available objects identified by unique id. """
         updated_count = 0
         for obj in misp_event.objects:
-            # self.da
             obj_unique_id = obj.comment
             if obj_unique_id in three_tuples.keys():
                 added_flag = self._add_sighting_to_existing_attr(obj)
@@ -245,7 +239,7 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
         misp_intelmq_ev = self.misp_inst.get_event(10282, pythonify=True)
         self.daemon.logger.info(f"Calculated new objects: {all_new_objects}")
         updated_objects_total = self._add_sightings_to_present_objects(all_new_objects, misp_intelmq_ev)
-        if updated_objects_total == 0 and len(all_new_objects) == 0:
+        if updated_objects_total == 0 and len(all_new_objects) == 1:
             # create new object
             three_tuple_to_create = list(all_new_objects.values())[0]
             self._create_new_misp_object(three_tuple_to_create,
