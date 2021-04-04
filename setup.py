@@ -14,10 +14,10 @@ setuptools.setup(
   description = "Basic proprietary module used for integration of MISP platform into Cesnet's Mentat system.",
   author = 'Pavel Eis',
   author_email = 'eis@cesnet.cz',
-  url = 'https://github.com/Aisik00/mentat-misp-connector',   # Provide either the link to your github or to your website
-  download_url = 'https://github.com/user/reponame/archive/v_01.tar.gz',    # I explain this later on
+  url = 'https://github.com/Aisik00/mentat-misp-connector',
+  download_url = 'https://github.com/Aisik00/mentat-misp-connector/archive/refs/tags/v_01.tar.gz',
   keywords = ['Mentat', 'MISP', 'integration'],
-  install_requires=[            # I get to this in a second
+  install_requires=[
           'pyzenkit',
           'mentat',
           'pymisp'
