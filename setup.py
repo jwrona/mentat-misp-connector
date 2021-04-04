@@ -6,10 +6,10 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setuptools.setup(
   name = 'mentat_misp_connector',
-  packages_dir={"": "src"},
+  package_dir={"": "src"},
   packages=setuptools.find_packages(where="src"),
   python_requires=">=3.6",
-  version = '0.1',
+  version = '0.1.1',
   license='MIT',
   description = "Basic proprietary module used for integration of MISP platform into Cesnet's Mentat system.",
   author = 'Pavel Eis',
@@ -19,7 +19,7 @@ setuptools.setup(
   keywords = ['Mentat', 'MISP', 'integration'],
   install_requires=[
           'pyzenkit',
-          'mentat',
+          'mentat-ng',
           'pymisp'
       ],
   classifiers=[
