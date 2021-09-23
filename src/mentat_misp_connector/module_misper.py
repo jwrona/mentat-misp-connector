@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+#-------------------------------------------------------------------------------
+# This file is part of Mentat system (https://mentat.cesnet.cz/).
+#
+# Copyright (C) since 2011 CESNET, z.s.p.o (http://www.ces.net/)
+# Use of this source is governed by the MIT license, see LICENSE file.
+#-------------------------------------------------------------------------------
 
 
 """
@@ -14,14 +20,37 @@ details.
 It is further based on :py:mod:`mentat.daemon.piper` module, which provides
 *pipe-like* message processing features. See the documentation for in-depth
 details.
+
+
+Usage examples
+--------------
+
+.. code-block:: shell
+
+    # Display help message and exit.
+    mentat-misper.py --help
+
+    # Run in debug mode and stay in foreground (enable output of debugging
+    # information to terminal and do not daemonize).
+    mentat-misper.py --no-daemon --debug
+
+    # Run with increased logging level.
+    mentat-misper.py --log-level debug
 """
 
+
+__author__  = "Jan Mach <jan.mach@cesnet.cz>, Pavel Eis <eis@cesnet.cz>"
+__credits__ = "Pavel Kácha <pavel.kacha@cesnet.cz>, Andrea Kropáčová <andrea.kropacova@cesnet.cz>"
+
+
+#
+# Custom libraries.
+#
 import mentat.const
 import mentat.daemon.piper
 import mentat.daemon.component.parser
+import mentat.daemon.component.misper
 import mentat.daemon.component.commiter
-
-from mentat_misp_connector.component_misper import MisperDaemonComponent, CONFIG_MISP_URL, CONFIG_MISP_KEY, CONFIG_MISP_CERT
 
 
 class MentatMisperDaemon(mentat.daemon.piper.PiperDaemon):
@@ -38,13 +67,13 @@ class MentatMisperDaemon(mentat.daemon.piper.PiperDaemon):
         configuration values for parent contructor.
         """
         super().__init__(
-            description = 'mentat-misper.py - IDEA to MISP converting daemon',
+            description = 'mentat-misper.py - IDEA message storing daemon',
             #
             # Define required daemon components.
             #
             components = [
                 mentat.daemon.component.parser.ParserDaemonComponent(),
-                MisperDaemonComponent()
+                mentat.daemon.component.misper.MisperDaemonComponent()
             ]
         )
 
@@ -80,9 +109,9 @@ class MentatMisperDaemon(mentat.daemon.piper.PiperDaemon):
         :rtype: dict
         """
         cfgs = (
-            (CONFIG_MISP_URL, ""),
-            (CONFIG_MISP_KEY, ""),
-            (CONFIG_MISP_CERT, "")
+            (mentat.daemon.component.misper.CONFIG_MISP_URL, ""),
+            (mentat.daemon.component.misper.CONFIG_MISP_KEY, ""),
+            (mentat.daemon.component.misper.CONFIG_MISP_CERT, "")
         ) + cfgs
         return super()._init_config(cfgs, **kwargs)
 

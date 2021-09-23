@@ -9,7 +9,7 @@ setuptools.setup(
   package_dir={"": "src"},
   packages=setuptools.find_packages(where="src"),
   python_requires=">=3.6",
-  version = '0.1.2',
+  version = '0.1.3',
   license='MIT',
   description = "Basic proprietary module used for integration of MISP platform into Cesnet's Mentat system.",
   author = 'Pavel Eis',
