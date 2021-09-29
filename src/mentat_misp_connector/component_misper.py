@@ -108,7 +108,7 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
 
     def cbk_event_message_process(self, daemon, args):
         """
-        Store the message into the persistent storage.
+        Load IDEA message and process it by MISP processor.
         """
         self.daemon = daemon
         # convert to raw json, without datetimes - for now, later can be updated
@@ -145,6 +145,9 @@ class MisperDaemonComponent(pyzenkit.zendaemon.ZenDaemonComponent):
 
 
 class UuidGenerator:
+    """
+    Generator responsible for generating UUIDs to corresponding objects (MISP events, objects, attributes, ..)
+    """
     BASE_EVENT_NAME = "CTI-IntelMQFeed4"
 
     def __init__(self, idea_event: mentat.idea.internal.Idea, logger):
@@ -162,17 +165,23 @@ class UuidGenerator:
         return self.src_ip_to_uuid[src_ip]
 
     def get_misp_event_uuid(self, org_uuid: str) -> str:
+        """ Retrieve uuid of event based on organization's UUID. """
         return str(uuid5(namespace=UUID(org_uuid), name=self.BASE_EVENT_NAME))
 
     def get_misp_obj_uuid(self, misp_event_uuid: str, src_ip: str, dst_ip, dst_port: int) -> str:
+        """ Retrieve uuid of object based on event's UUID, source IP, destination IP and destination port. """
         name = "_-_".join((src_ip, dst_ip, str(dst_port)))
         return str(uuid5(namespace=UUID(misp_event_uuid), name=name))
 
     def get_misp_attr_uuid(self, misp_obj_uuid: str, attr_value: str) -> str:
+        """ Retrieve uuid of attribute based on MISP object's UUID and attribute's value. """
         return str(uuid5(namespace=UUID(misp_obj_uuid), name=attr_value))
 
 
 class IdeaToMispProcessor:
+    """
+    Processing class responsible for converting IDEA messages to MISP core format.
+    """
     def __init__(self, daemon_logger, misp_inst: ExpandedPyMISP, uuid_generator: UuidGenerator):
         self.logger = daemon_logger
         self.misp_inst = misp_inst
@@ -289,7 +298,8 @@ class IdeaToMispProcessor:
         return self.misp_inst.add_event(misp_event, pythonify=True)
 
     def _create_new_event_with_object(self, three_tuple, org_uuid):
-        """ Creates new MISP event with ip-port MISP object, which carries values from three_tuple. """
+        """ Creates new MISP event wit organization UUID with ip-port MISP object, which carries values from
+        three_tuple. """
         misp_event = self._create_new_event(org_uuid)
         self.logger.info(f"Created event: {misp_event}")
         if isinstance(misp_event, dict) and misp_event.get('errors'):
@@ -326,6 +336,8 @@ class IdeaToMispProcessor:
         return misp_events_to_update
 
     def process_all_three_tuples(self, three_tuples: list):
+        """ Processes all three_tuples. Increases sightings on corresponding MISP objects or creates new MISP event,
+        if on for the organization does not already exist and if there is only one three_tuple. """
         misp_events_to_update = self._get_events_to_update(three_tuples)
         if not misp_events_to_update:
             self.logger.info(f"Org UUID was not found for any src IP in GCAS API, terminate processing of this message.")
